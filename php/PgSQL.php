@@ -14,8 +14,8 @@ class PgSQL
     private $_dbpass;
     private $_dbname;
 
-    private $_result;
-    private $_querycount;
+    public $_result;
+    public $_querycount;// 执行的查询总数
 
     private $_linkid;
 
@@ -44,9 +44,9 @@ class PgSQL
         try {
             $this->_linkid = pg_connect("host=$this->_host port=$this->_port dbname=$this->_dbname
 user=$this->_dbuser password=$this->_dbpass");//@
-            if (!$this->_linkid){
+            if (!$this->_linkid) {
                 throw new Exception("Could not connect to PostgreSQL server.");
-            }else{
+            } else {
 //                echo "Connect Success";
             }
         } catch (Exception $e) {
@@ -63,7 +63,7 @@ user=$this->_dbuser password=$this->_dbpass");//@
     {
         try {
             $this->_result = pg_query($this->_linkid, $query);
-            if (!$this->_result){
+            if (!$this->_result) {
                 throw new Exception("The database query failed.");
             }
         } catch (Exception $e) {
@@ -72,11 +72,12 @@ user=$this->_dbuser password=$this->_dbpass");//@
         $this->_querycount++;
         return $this->_result;
     }
-    public function queryParams($query,$params)
+
+    public function queryParams($query, $params)
     {
         try {
-            $this->_result = pg_query_params($this->_linkid, $query,$params);
-            if (!$this->_result){
+            $this->_result = pg_query_params($this->_linkid, $query, $params);
+            if (!$this->_result) {
                 throw new Exception("The database query failed.");
             }
         } catch (Exception $e) {
@@ -85,16 +86,41 @@ user=$this->_dbuser password=$this->_dbpass");//@
         $this->_querycount++;
         return $this->_result;
     }
+
     /**
      * 将查询结果作为索引数组返回
      * @return array
      */
-    public function fetchRow(){
-        $row = pg_fetch_row($this->_result);
+    public function fetchRow()
+    {
+        $row = @pg_fetch_row($this->_result);
         return $row;
     }
-    public function  getLinkID(){
+
+    /**
+     * 确定查询所返回的行数
+     * @return int
+     */
+    public function numRows()
+    {
+        $count = pg_num_rows($this->_result);
+        return $count;
+    }
+
+    /**
+     * 返回查询、插入、更改所影响的行的总数
+     * @return int
+     */
+    public function affectedRows()
+    {
+        $count = pg_affected_rows($this->_linkid);
+        return $count;
+    }
+
+    public function getLinkID()
+    {
 //        echo $this->_linkid;
         return $this->_linkid;
     }
+
 }
