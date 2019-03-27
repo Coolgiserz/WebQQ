@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cool WebQQ</title>
+    <script src="lib/UUID.js"></script>
+
+    <script src="extend/js/jquery-3.3.1.js"></script>
+    <script src="extend/js/jquery-ui.js"></script>
+
+    <link rel="stylesheet" href="extend/css/jquery-ui.theme.min.css">
+    <link rel="stylesheet" href="extend/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="extend/css/jquery-ui.structure.min.css">
+    <script src="lib/Connector.js"></script>
+
+    <link rel="stylesheet" href="lib/webqq.css">
+    <script src="lib/LoginDlg.js"></script>
+    <script src="lib/RegisterDlg.js"></script>
+
+</head>
+
+<script>
+    var logindlg;
+    var regisdlg;
+    $(document).ready(function () {
+        onRegisterDialog();
+        onShowLoginDialog();
+    });
+
+    function onRegisterDialog() {
+        regisdlg = new RegisterDlg({
+            regisdiv:"registerdlg"
+
+        })
+
+    }
+    /**
+     * show dialog
+     */
+    function onShowLoginDialog() {
+        logindlg = new LoginDlg({
+            logindiv:"logindlg",
+        });
+    }
+</script>
+<body>
+<div id="logindlg" title="登录"></div>
+<div id="registerdlg" title="注册"></div>
+
+<div id="dlg_fail_msg" title="登录失败"></div>
+</body>
+</html>
