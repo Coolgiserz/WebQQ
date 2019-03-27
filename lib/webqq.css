@@ -4,3 +4,9 @@ input{
     border: 1px solid #ddd;
 
 }
+
+select{
+    width: 95%;
+    padding: 5px;
+    border: 1px solid #ddd;
+}
