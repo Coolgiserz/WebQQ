@@ -78,7 +78,7 @@ user=$this->_dbuser password=$this->_dbpass");//@
         try {
             $this->_result = pg_query_params($this->_linkid, $query, $params);
             if (!$this->_result) {
-                throw new Exception("The database query failed.");
+                throw new Exception("数据库查询失败");
             }
         } catch (Exception $e) {
             echo $e->getMessage();

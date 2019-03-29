@@ -17,6 +17,9 @@
     <link rel="stylesheet" href="lib/webqq.css">
     <script src="lib/LoginDlg.js"></script>
     <script src="lib/RegisterDlg.js"></script>
+    <script src="extend/js/jquery.validate.js"></script>
+    <script src="lib/MyValidate.js"></script>
+    <script src="lib/Chat.js"></script>
 
 </head>
 
@@ -24,6 +27,7 @@
     var logindlg;
     var regisdlg;
     $(document).ready(function () {
+        new MyValidate();
         onRegisterDialog();
         onShowLoginDialog();
     });
@@ -31,7 +35,6 @@
     function onRegisterDialog() {
         regisdlg = new RegisterDlg({
             regisdiv:"registerdlg"
-
         })
 
     }
@@ -47,6 +50,7 @@
 <body>
 <div id="logindlg" title="登录"></div>
 <div id="registerdlg" title="注册"></div>
+<div id="chatdlg"></div>
 
 <div id="dlg_fail_msg" title="登录失败"></div>
 </body>
