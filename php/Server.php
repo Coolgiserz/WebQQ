@@ -13,11 +13,7 @@ class Server
     protected $_requests = NULL;
     protected $_response = NULL;
     protected $_pgsql = NULL;
-    protected $tb_user = "qq_user";//用户账户数据表
-    protected $tb_userdetail = "user_detail";//用户详细信息表
-    protected $tb_friendship = "qq_friendships";//好友关系表
-    protected $tb_messages = "qq_messages";//消息表
-    protected $tb_posts = "qq_posts";//post
+
 
 
     public function __construct()

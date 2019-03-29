@@ -11,6 +11,11 @@ include_once 'Server.php';//引入Server.php
 
 class UserServer extends Server
 {
+    protected $tb_user = "qq_user";//用户账户数据表
+    protected $tb_userdetail = "user_detail";//用户详细信息表
+    protected $tb_friendship = "qq_friendships";//好友关系表
+    protected $tb_messages = "qq_messages";//消息表
+    protected $tb_posts = "qq_posts";//post
     public function __construct()
     {
         parent::__construct();
@@ -28,7 +33,7 @@ class UserServer extends Server
     {
         $query1 = "insert into " . $this->tb_user . " (username," . '"password")' . " values($1,md5($2))";
         $query2 = "insert into " . $this->tb_userdetail
-            . " (realname," . '"gender",email,mobile,industry)'
+            . " (realname," . 'gender,email,mobile,industry)'
             . " values($1,$2,$3,$4,$5)";
 
         $params = $this->_requests->params;
@@ -37,24 +42,15 @@ class UserServer extends Server
         $realname = $params->realname;
         $gender = $params->gender;
         $email = $params->email;
-        $mobile = $params["mobile"];
-        $industry = $params["industry"];
-
-//        var_dump($params);
-
+        $mobile = $params->mobile;
+        $industry = $params->industry;
         $this->_pgsql->queryParams($query1, array(
             $username, $password
         ));
-//        $row = $this->_pgsql->_querycount;
-//        var_dump($row);
-//        echo $this->debugTips(0,"语句1影响行数："+$row);
         $this->_pgsql->queryParams($query2, array(
             $realname, $gender, $email, $mobile, $industry
         ));
         $this->makeResponse(true, "注册成功！", NULL);
-//        $affected_row = $this->_pgsql->affectedRows();
-//        echo $this->debugTips(0,"语句2影响行数："+$affected_row);
-
     }
 
     /**
@@ -94,11 +90,6 @@ class UserServer extends Server
                 //检查用户输入
                 $isValid = $this->checkInput();
                 if ($isValid) {
-                    //初始化数据库对象
-                    $this->_pgsql = new PgSQL();
-                    //连接数据库
-                    $this->_pgsql->connect();
-                    //注册逻辑——判断用户是否存在及密码是否匹配
                     $this->onRegister();
                 } else {
                     $this->makeResponse(false, "注册失败，请检查您的输入！", array());

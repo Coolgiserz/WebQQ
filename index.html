@@ -27,11 +27,15 @@
     var logindlg;
     var regisdlg;
     $(document).ready(function () {
-        new MyValidate();
-        onRegisterDialog();
-        onShowLoginDialog();
+        onInitUI();
     });
 
+    function onInitUI() {
+        onRegisterDialog();
+        onShowLoginDialog();
+        new MyValidate();
+
+    }
     function onRegisterDialog() {
         regisdlg = new RegisterDlg({
             regisdiv:"registerdlg"
@@ -51,7 +55,6 @@
 <div id="logindlg" title="登录"></div>
 <div id="registerdlg" title="注册"></div>
 <div id="chatdlg"></div>
-
 <div id="dlg_fail_msg" title="登录失败"></div>
 </body>
 </html>
