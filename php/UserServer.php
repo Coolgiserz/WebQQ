@@ -70,6 +70,9 @@ class UserServer extends Server
         if ($row[0] == 1) {//存在用户
             $this->makeResponse(true, "LOGIN SUCCESS", array());
             echo $this->_response;//对登录成功进行响应
+            // show friends lists
+
+
         } else {//不存在此用户
             $this->makeResponse(false, "LOGIN FAILURE", NULL);
             echo $this->_response;//对登录失败进行响应
