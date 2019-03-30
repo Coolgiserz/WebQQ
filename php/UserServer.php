@@ -8,6 +8,7 @@
 
 include_once 'dbconfig.php';
 include_once 'Server.php';//引入Server.php
+session_start();
 
 class UserServer extends Server
 {
@@ -16,6 +17,7 @@ class UserServer extends Server
     protected $tb_friendship = "qq_friendships";//好友关系表
     protected $tb_messages = "qq_messages";//消息表
     protected $tb_posts = "qq_posts";//post
+
     public function __construct()
     {
         parent::__construct();
@@ -68,17 +70,19 @@ class UserServer extends Server
         $this->_pgsql->queryParams($query, $loginarr);
         $row = $this->_pgsql->fetchRow();
         if ($row[0] == 1) {//存在用户
-            $this->makeResponse(true, "LOGIN SUCCESS", array());
+
+            $_SESSION["user"] = $params->username;//设置session
+            $friends = $this->getFriendLists($params->username);
+            $this->makeResponse(true, "LOGIN SUCCESS", $friends);
             echo $this->_response;//对登录成功进行响应
             // show friends lists
-
-
         } else {//不存在此用户
             $this->makeResponse(false, "LOGIN FAILURE", NULL);
             echo $this->_response;//对登录失败进行响应
 
         }
     }
+
     /**
      * 主例程
      */
@@ -100,6 +104,16 @@ class UserServer extends Server
                 }
 
         }
+    }
+
+    private function getFriendLists($user1)
+    {
+        $query = "select user2 from qq_friendships" . " where user1=$1";
+//        $params = $this->_requests->params;
+        $farr = array($user1);
+        $this->_pgsql->queryParams($query, $farr);
+        $row = $this->_pgsql->fetchAll();
+        return $row;
     }
 
     /**

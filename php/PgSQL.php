@@ -117,6 +117,12 @@ user=$this->_dbuser password=$this->_dbpass");//@
         return $count;
     }
 
+    public function fetchAll()
+    {
+        $row = @pg_fetch_all($this->_result);
+        return $row;
+    }
+
     public function getLinkID()
     {
 //        echo $this->_linkid;

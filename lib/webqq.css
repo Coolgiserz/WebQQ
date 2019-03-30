@@ -1,10 +1,20 @@
-input{
+#regisform input{
     width: 95%;
     padding: 5px;
     border: 1px solid #ddd;
 
 }
 
+.login_form{
+    width: 95%;
+    padding: 5px;
+    border: 1px solid #ddd;
+}
+
+br{
+    padding: 5px;
+    border: 1px solid #ddd;
+}
 select{
     width: 95%;
     padding: 5px;
