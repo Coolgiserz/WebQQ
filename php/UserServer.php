@@ -55,33 +55,6 @@ class UserServer extends Server
         $this->makeResponse(true, "注册成功！", NULL);
     }
 
-    /**
-     * 处理登录逻辑, 若用户登录信息正确，则成功登录，否则给出错误提示
-     */
-    private function onLogin()
-    {
-        $tb_name = "qq_user";
-        //构造SQL语句查询用户是否存在，密码采用md5散列存储
-        $query = "select count(1) from " . $tb_name . " where username=$1 and " . '"password"=md5($2)';
-        $params = $this->_requests->params;
-        $loginarr = array(
-            $params->username, $params->password
-        );
-        $this->_pgsql->queryParams($query, $loginarr);
-        $row = $this->_pgsql->fetchRow();
-        if ($row[0] == 1) {//存在用户
-
-            $_SESSION["user"] = $params->username;//设置session
-            $friends = $this->getFriendLists($params->username);
-            $this->makeResponse(true, "LOGIN SUCCESS", $friends);
-            echo $this->_response;//对登录成功进行响应
-            // show friends lists
-        } else {//不存在此用户
-            $this->makeResponse(false, "LOGIN FAILURE", NULL);
-            echo $this->_response;//对登录失败进行响应
-
-        }
-    }
 
     /**
      * 主例程
@@ -106,6 +79,70 @@ class UserServer extends Server
         }
     }
 
+    /**
+     * 处理登录逻辑, 若用户登录信息正确，则成功登录，否则给出错误提示
+     */
+    private function onLogin()
+    {
+        $tb_name = "qq_user";
+        //构造SQL语句查询用户是否存在，密码采用md5散列存储
+        $query = "select count(1) from " . $tb_name . " where username=$1 and " . '"password"=md5($2)';
+        $params = $this->_requests->params;
+        $loginarr = array(
+            $params->username, $params->password
+        );
+        $this->_pgsql->queryParams($query, $loginarr);
+        $row = $this->_pgsql->fetchRow();
+        if ($row[0] == 1) {//存在用户
+
+            $_SESSION["user"] = $params->username;//设置session
+            $id= $this->getUserId($params->username);
+            $friends = $this->getFriendLists($params->username);
+            $profile = $this->getUserProfiles($id[0]);
+            array_push($profile,$params->username);
+            $this->makeResponse(true, "LOGIN SUCCESS", array($friends, $profile));
+            echo $this->_response;//对登录成功进行响应
+            // show friends lists
+        } else {//不存在此用户
+            $this->makeResponse(false, "LOGIN FAILURE", NULL);
+            echo $this->_response;//对登录失败进行响应
+
+        }
+    }
+
+    /**
+     * 获取用户简介
+     * @param $username
+     * @return mixed
+     */
+    private function getUserProfiles($id)
+    {
+        $query = "select mobile,email,industry,profession from user_detail" . " where ". '"id"'."=$1";
+        $farr = array($id["id"]);
+//        var_dump($query);
+//        var_dump($id);
+//
+//        var_dump($farr);
+        $this->_pgsql->queryParams($query, $farr);
+        $row = $this->_pgsql->fetchRow();
+//        var_dump($row);
+
+
+        return $row;
+    }
+
+    private function getUserId($username){
+        $query = "select id from qq_user" . " where username=$1";
+        $farr = array($username);
+        $this->_pgsql->queryParams($query, $farr);
+        $row = $this->_pgsql->fetchAll();
+
+        return $row;
+    }
+    /**
+     * @param $user1
+     * @return mixed
+     */
     private function getFriendLists($user1)
     {
         $query = "select user2 from qq_friendships" . " where user1=$1";
@@ -120,7 +157,8 @@ class UserServer extends Server
      * 检查用户输入
      * @return bool
      */
-    private function checkInput()
+    private
+    function checkInput()
     {
         return true;
     }

@@ -76,6 +76,7 @@ user=$this->_dbuser password=$this->_dbpass");//@
     public function queryParams($query, $params)
     {
         try {
+//            var_dump($params);
             $this->_result = pg_query_params($this->_linkid, $query, $params);
             if (!$this->_result) {
                 throw new Exception("数据库查询失败");
