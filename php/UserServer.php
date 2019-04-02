@@ -35,8 +35,8 @@ class UserServer extends Server
     {
         $query1 = "insert into " . $this->tb_user . " (username," . '"password")' . " values($1,md5($2))";
         $query2 = "insert into " . $this->tb_userdetail
-            . " (realname," . 'gender,email,mobile,industry)'
-            . " values($1,$2,$3,$4,$5)";
+            . " (id,realname,gender,email,mobile,industry)"
+            . " values($1,$2,$3,$4,$5,$6)";
 
         $params = $this->_requests->params;
         $username = $params->username;
@@ -46,13 +46,23 @@ class UserServer extends Server
         $email = $params->email;
         $mobile = $params->mobile;
         $industry = $params->industry;
+
         $this->_pgsql->queryParams($query1, array(
             $username, $password
         ));
+        $id = $this->getUserId($username)[0]["id"];
+//        var_dump(array(
+//            $id, $realname, $gender, $email, $mobile, $industry
+//        ));
+//        var_dump(array(
+//            $username, $password
+//        ));
+
         $this->_pgsql->queryParams($query2, array(
-            $realname, $gender, $email, $mobile, $industry
+            $id, $realname, $gender, $email, $mobile, $industry
         ));
-        $this->makeResponse(true, "注册成功！", NULL);
+        $this->makeResponse(true, "注册成功！", array());
+        echo $this->_response;//对注册失败进行响应
     }
 
 
@@ -71,6 +81,7 @@ class UserServer extends Server
                 $isValid = $this->checkInput();
                 if ($isValid) {
                     $this->onRegister();
+
                 } else {
                     $this->makeResponse(false, "注册失败，请检查您的输入！", array());
                     echo $this->_response;//对注册失败进行响应
@@ -96,10 +107,10 @@ class UserServer extends Server
         if ($row[0] == 1) {//存在用户
 
             $_SESSION["user"] = $params->username;//设置session
-            $id= $this->getUserId($params->username);
+            $id = $this->getUserId($params->username);
             $friends = $this->getFriendLists($params->username);
             $profile = $this->getUserProfiles($id[0]);
-            array_push($profile,$params->username);
+            array_push($profile, $params->username);
             $this->makeResponse(true, "LOGIN SUCCESS", array($friends, $profile));
             echo $this->_response;//对登录成功进行响应
             // show friends lists
@@ -117,7 +128,7 @@ class UserServer extends Server
      */
     private function getUserProfiles($id)
     {
-        $query = "select mobile,email,industry,profession from user_detail" . " where ". '"id"'."=$1";
+        $query = "select mobile,email,industry,profession from user_detail" . " where " . '"id"' . "=$1";
         $farr = array($id["id"]);
 //        var_dump($query);
 //        var_dump($id);
@@ -131,7 +142,8 @@ class UserServer extends Server
         return $row;
     }
 
-    private function getUserId($username){
+    private function getUserId($username)
+    {
         $query = "select id from qq_user" . " where username=$1";
         $farr = array($username);
         $this->_pgsql->queryParams($query, $farr);
@@ -139,6 +151,7 @@ class UserServer extends Server
 
         return $row;
     }
+
     /**
      * @param $user1
      * @return mixed
