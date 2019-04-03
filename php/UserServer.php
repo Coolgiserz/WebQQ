@@ -17,6 +17,7 @@ class UserServer extends Server
     protected $tb_friendship = "qq_friendships";//好友关系表
     protected $tb_messages = "qq_messages";//消息表
     protected $tb_posts = "qq_posts";//post
+    protected $_params = NULL;
 
     public function __construct()
     {
@@ -73,6 +74,10 @@ class UserServer extends Server
     {
         //登录逻辑
         switch ($this->_requests->type) {
+            case "USER_HAS_LOGIN":
+                //检查用户是否已经登录
+                $this->checkHasLogin();
+                break;
             case "USER_LOGIN":
                 $this->onLogin();
                 break;
@@ -86,7 +91,13 @@ class UserServer extends Server
                     $this->makeResponse(false, "注册失败，请检查您的输入！", array());
                     echo $this->_response;//对注册失败进行响应
                 }
+                break;
+            case "USER_GET_FRIEND":
+                $friends = $this->getFriendsList();
+                $this->makeResponse(true, "OK", $friends);
+                echo $this->_response;//对注册失败进行响应
 
+                break;
         }
     }
 
@@ -96,8 +107,8 @@ class UserServer extends Server
     private function onLogin()
     {
         $tb_name = "qq_user";
-        //构造SQL语句查询用户是否存在，密码采用md5散列存储
-        $query = "select count(1) from " . $tb_name . " where username=$1 and " . '"password"=md5($2)';
+        //构造SQL语句查询用户是否存在，密码采用md5散列存储,采用limit进行限制，安全、效率
+        $query = "select count(1) from " . $tb_name . " where username=$1 and " . '"password"=md5($2) limit 1';
         $params = $this->_requests->params;
         $loginarr = array(
             $params->username, $params->password
@@ -108,11 +119,15 @@ class UserServer extends Server
 
             $_SESSION["user"] = $params->username;//设置session
             $id = $this->getUserId($params->username);
-            $friends = $this->getFriendLists($params->username);
-            $profile = $this->getUserProfiles($id[0]);
-            array_push($profile, $params->username);
-            $this->makeResponse(true, "LOGIN SUCCESS", array($friends, $profile));
+//            $friends = $this->getFriendLists($params->username);
+//            $profile = $this->getUserProfiles($id[0]);
+//            array_push($profile, $params->username);
+//            $data = array($friends, $profile);
+            $this->makeResponse(true, "LOGIN SUCCESS", NULL);
             echo $this->_response;//对登录成功进行响应
+            //设置session
+            $_SESSION["USER_ID"] = $id[0];
+            $_SESSION["USER_NAME"] = $params->username;
             // show friends lists
         } else {//不存在此用户
             $this->makeResponse(false, "LOGIN FAILURE", NULL);
@@ -153,6 +168,62 @@ class UserServer extends Server
     }
 
     /**
+     * 检查用户是否已经登录
+     */
+    private function checkHasLogin()
+    {
+        if (isset($_SESSION["USER_ID"]) && isset($_SESSION["USER_NAME"])) {
+            //已设置会话，得到用户好友列表并进行响应
+            $friends = $this->getFriendsList();
+            $this->makeResponse(true, "Has Login", $friends);
+        } else {
+            //会话尚未设置
+            $this->makeResponse(false, "Has not login", NULL);
+        }
+        echo $this->_response;
+
+    }
+
+    /**
+     *
+     */
+    private function getFriendsList()
+    {
+        //查询用户的好友列表
+        $query = "
+                select
+                    A.id,
+                    C.id,
+                    C.username
+                from 
+                    qq_user A,
+                    qq_friendships B,
+                    qq_user C
+                where
+                    A.id = B.user1 
+                and A.username = $1
+                and B.user2 = C.id
+            ";
+        $querydata = array($_SESSION["USER_NAME"]);
+
+//        $querydata = array($this->_params->username);
+        $result = $this->_pgsql->queryParams($query, $querydata);
+        $i = 0;
+        $friends = array();
+        while ($row = pg_fetch_row($result)) {
+//        var_dump($row);
+            array_push($friends,array(
+                "FID"=>$row[1],
+                "FNAME"=>$row[2]
+            ));
+        }
+
+        return $friends;
+//        var_dump($friends);
+//        $this->makeResponse(true,"ok!",$friends);
+    }
+
+    /**
      * @param $user1
      * @return mixed
      */
@@ -175,4 +246,5 @@ class UserServer extends Server
     {
         return true;
     }
+
 }

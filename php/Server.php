@@ -15,7 +15,6 @@ class Server
     protected $_pgsql = NULL;
 
 
-
     public function __construct()
     {
     }
@@ -71,6 +70,7 @@ class Server
     public function setRequest($requestobj)
     {
         $this->_requests = $requestobj;
+
     }
 
     public function debugTips($msgtype = 0,$message="Debug Success")

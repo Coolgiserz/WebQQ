@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="extend/css/jquery-ui.min.css">
     <link rel="stylesheet" href="extend/css/jquery-ui.structure.min.css">
     <script src="lib/Connector.js"></script>
-    <script src="lib/MySession.js"></script>
     <link rel="stylesheet" href="lib/webqq.css">
     <script src="lib/LoginDlg.js"></script>
     <script src="lib/RegisterDlg.js"></script>
@@ -34,24 +33,42 @@
     });
 
     function onInitUI() {
+        //检查用户是否登录
+        Connector({
+            data:{
+                type:"USER_HAS_LOGIN",
+
+            },
+            success:function (json) {
+                alert('已经登录');
+                console.log(json);
+                //返回好友列表
+                onShowChatDialog(json);
+            },
+            failure:function (json) {
+                onShowLoginDialog();
+            }
+        });
         onRegisterDialog();
-        ses = $.session.get('user');
+        // ses = $.session.get('user');
         // if(ses){// show chat.js
         //     onShowChatDialog();
         // }else{
         //     onShowLoginDialog();
         // }
-        onShowLoginDialog();
 
         new MyValidate();
 
 
     }
 
-    function onShowChatDialog() {
+    function onShowChatDialog(json) {
         chatdlg = new ChatDlg({
             chatdiv: "chatdlg",
+            friends: json.data,// friends list
+
         });
+        chatdlg._dlg.dialog("open");
         // chatdlg._dlg.dialog("open");
     }
 
