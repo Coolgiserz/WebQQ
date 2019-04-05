@@ -98,6 +98,9 @@ class UserServer extends Server
                 echo $this->_response;//对注册失败进行响应
 
                 break;
+            case "USER_GET_PROFILE":
+                //获取用户简介
+                break;
         }
     }
 
