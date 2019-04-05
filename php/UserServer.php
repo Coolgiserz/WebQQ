@@ -101,6 +101,14 @@ class UserServer extends Server
             case "USER_GET_PROFILE":
                 //获取用户简介
                 break;
+            case "USER_SEND_MSG":
+                //发送信息
+                $this->sendMessage();
+                break;
+            case "USER_GET_MSG":
+                //接受信息
+                $this->getFriendMessage();
+                break;
         }
     }
 
@@ -167,7 +175,7 @@ class UserServer extends Server
         $this->_pgsql->queryParams($query, $farr);
         $row = $this->_pgsql->fetchAll();
 
-        return $row;
+        return $row[0]["id"];
     }
 
     /**
@@ -211,13 +219,12 @@ class UserServer extends Server
 
 //        $querydata = array($this->_params->username);
         $result = $this->_pgsql->queryParams($query, $querydata);
-        $i = 0;
         $friends = array();
         while ($row = pg_fetch_row($result)) {
 //        var_dump($row);
-            array_push($friends,array(
-                "FID"=>$row[1],
-                "FNAME"=>$row[2]
+            array_push($friends, array(
+                "FID" => $row[1],
+                "FNAME" => $row[2]
             ));
         }
 
@@ -241,11 +248,73 @@ class UserServer extends Server
     }
 
     /**
+     * 发送消息
+     */
+    private function sendMessage()
+    {
+//        var_dump($this->_requests->params->message);
+        $msg = $this->_requests->params->message;
+        $fromid = $this->getUserId($_SESSION["USER_NAME"]);
+        $query = "insert into qq_messages (fromid,toid,msg) values ($1,$2,$3)";
+        $farr = array(
+            "fromid" => $fromid,
+            "toid" => $this->_requests->params->toid,
+            "message" => $msg
+        );
+//        var_dump($fromid);
+        $this->_pgsql->queryParams($query, $farr);
+        if (!$this->_pgsql->_result) {
+            $this->makeResponse(false, "Not ok!", NULL);
+
+        } else {
+            $this->makeResponse(true, "Send OK!", array($msg));
+        }
+        echo $this->_response;
+    }
+
+    private function getFriendMessage()
+    {
+        $msg = $this->_requests->params->message;
+        $toid = $this->getUserId($_SESSION["USER_NAME"]);
+        $query = "select 
+                        B.id,
+                        A.msg,
+                        A.sendtime
+                  from 
+                        qq_messages A,
+                        qq_user B 
+                  where 
+                        A.toid=$1 
+                        and B.id=A.fromid";
+        $farr = array(
+            "toid" => $toid,
+        );
+//        var_dump($fromid);
+        $this->_pgsql->queryParams($query, $farr);
+        if (!$this->_pgsql->_result) {
+            $this->makeResponse(false, "Not Get!", NULL);
+
+        } else {
+            $msg = array();
+            while ($row = pg_fetch_row($this->_pgsql->_result)) {
+                array_push($msg, array(
+                    "FROM" => $row[0],
+                    "MSG" => $row[1],
+                    "TIME" => $row[2]
+                ));
+            }
+            $this->makeResponse(true, "Get OK!", array($msg));
+        }
+        echo $this->_response;
+        //        var_dump($row);
+
+    }
+
+    /**
      * 检查用户输入
      * @return bool
      */
-    private
-    function checkInput()
+    private function checkInput()
     {
         return true;
     }

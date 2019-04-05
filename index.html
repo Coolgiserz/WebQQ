@@ -19,7 +19,9 @@
     <script src="lib/RegisterDlg.js"></script>
     <script src="extend/js/jquery.validate.js"></script>
     <script src="lib/MyValidate.js"></script>
-    <script src="lib/Chat.js"></script>
+    <!--<script src="lib/Chat.js"></script>-->
+    <script src="lib/FriendListDlg.js"></script>
+    <script src="lib/ChatDlg.js"></script>
 
 </head>
 
@@ -40,23 +42,17 @@
 
             },
             success:function (json) {
-                alert('已经登录');
+               // alert('已经登录');
                 console.log(json);
                 //返回好友列表
-                onShowChatDialog(json);
+                new FriendListDlg();
+                // onShowChatDialog(json);
             },
             failure:function (json) {
                 onShowLoginDialog();
             }
         });
         onRegisterDialog();
-        // ses = $.session.get('user');
-        // if(ses){// show chat.js
-        //     onShowChatDialog();
-        // }else{
-        //     onShowLoginDialog();
-        // }
-
         new MyValidate();
 
 
