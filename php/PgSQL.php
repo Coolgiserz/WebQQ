@@ -18,7 +18,7 @@ class PgSQL
     public $_querycount;// 执行的查询总数
 
     private $_linkid;
-
+    private $_sqlresponse;
     /**
      * PgSQL constructor.
      * @param $host
@@ -45,7 +45,8 @@ class PgSQL
             $this->_linkid = pg_connect("host=$this->_host port=$this->_port dbname=$this->_dbname
 user=$this->_dbuser password=$this->_dbpass");//@
             if (!$this->_linkid) {
-                throw new Exception("Could not connect to PostgreSQL server.");
+                $this->makeSQLResponse(false,"Could not connect to PostgreSQL server.",NULL);
+//                throw new Exception("Could not connect to PostgreSQL server.");
             } else {
 //                echo "Connect Success";
             }
@@ -64,7 +65,9 @@ user=$this->_dbuser password=$this->_dbpass");//@
         try {
             $this->_result = pg_query($this->_linkid, $query);
             if (!$this->_result) {
-                throw new Exception("The database query failed.");
+                $this->makeSQLResponse(false,"The database query failed.",NULL);
+
+//                throw new Exception("The database query failed.");
             }
         } catch (Exception $e) {
             echo $e->getMessage();
@@ -79,10 +82,14 @@ user=$this->_dbuser password=$this->_dbpass");//@
 //            var_dump($params);
             $this->_result = pg_query_params($this->_linkid, $query, $params);
             if (!$this->_result) {
-                throw new Exception("数据库查询失败");
+                $this->makeSQLResponse(false,"The database query failed.",NULL);
+
+//                throw new Exception("数据库查询失败");
             }
         } catch (Exception $e) {
-            echo $e->getMessage();
+            $this->makeSQLResponse(false,$e->getMessage(),NULL);
+
+//            echo $e->getMessage();
         }
         $this->_querycount++;
         return $this->_result;
@@ -104,7 +111,7 @@ user=$this->_dbuser password=$this->_dbpass");//@
      */
     public function numRows()
     {
-        $count = pg_num_rows($this->_result);
+        $count = @pg_num_rows($this->_result);
         return $count;
     }
 
@@ -114,7 +121,7 @@ user=$this->_dbuser password=$this->_dbpass");//@
      */
     public function affectedRows()
     {
-        $count = pg_affected_rows($this->_linkid);
+        $count = @pg_affected_rows($this->_linkid);
         return $count;
     }
 
@@ -129,5 +136,17 @@ user=$this->_dbuser password=$this->_dbpass");//@
 //        echo $this->_linkid;
         return $this->_linkid;
     }
+    public function makeSQLResponse($success,$message, $data)
+    {
+        $this->_sqlresponse =  json_encode(array(
+            "success" => $success,
+            "message" => $message,
+            "data" => $data
+        ));
 
+    }
+
+    public function getResponse(){
+        return $this->_sqlresponse;
+    }
 }
